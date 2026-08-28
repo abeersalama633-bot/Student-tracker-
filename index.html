@@ -5,14 +5,18 @@
     <title>نظام متابعة الطلاب - طب الاسكندرية</title>
     <style>
         body { font-family: 'Arial'; background: #f4f4f4; margin: 0; padding: 20px; }
-       .header { background: #004d99; color: white; padding: 20px; text-align: center; border-radius: 10px; }
-       .container { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+      .header { background: #004d99; color: white; padding: 20px; text-align: center; border-radius: 10px; }
+      .container { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
         #searchBox { width: 100%; padding: 10px; font-size: 16px; border: 2px solid #004d99; border-radius: 5px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #004d99; color: white; padding: 10px; }
         td { padding: 10px; border: 1px solid #ddd; text-align: center; }
         tr:hover { background-color: #f1f1f1; }
-       .footer { text-align: center; margin-top: 20px; color: #555; }
+       .btn { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
+       .btn:hover { background: #218838; }
+      .form-add { display: none; margin-bottom: 20px; }
+      .form-add input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+      .footer { text-align: center; margin-top: 20px; color: #555; }
     </style>
 </head>
 <body>
@@ -24,7 +28,16 @@
 
     <div class="container">
         <h2>قائمة الطلاب</h2>
-        
+
+        <button class="btn" onclick="showForm()">+ اضافة طالب جديد</button>
+
+        <div class="form-add" id="addForm">
+            <input type="text" id="code" placeholder="الكود">
+            <input type="text" id="name" placeholder="اسم الطالب">
+            <input type="text" id="grade" placeholder="الدرجة">
+            <button class="btn" onclick="addStudent()">حفظ</button>
+        </div>
+
         <input type="text" id="searchBox" onkeyup="searchStudent()" placeholder="ابحث عن اسم الطالب او الكود...">
 
         <table id="studentTable">
@@ -44,12 +57,6 @@
                 <td>1002</td>
                 <td>سارة علي</td>
                 <td>88</td>
-                <td>ناجح</td>
-            </tr>
-            <tr>
-                <td>1003</td>
-                <td>يوسف محمود</td>
-                <td>75</td>
                 <td>ناجح</td>
             </tr>
         </table>
@@ -76,15 +83,34 @@ function searchStudent() {
         }
       }
     }
-    if (found) {
-      tr[i].style.display = "";
-    } else {
-      tr[i].style.display = "none";
-    }
+    if (found) { tr[i].style.display = ""; } else { tr[i].style.display = "none"; }
   }
+}
+
+function showForm() {
+  document.getElementById("addForm").style.display = "block";
+}
+
+function addStudent() {
+  let code = document.getElementById("code").value;
+  let name = document.getElementById("name").value;
+  let grade = document.getElementById("grade").value;
+  let status = grade >= 60? "ناجح" : "راسب";
+
+  let table = document.getElementById("studentTable");
+  let row = table.insertRow(-1);
+  row.insertCell(0).innerHTML = code;
+  row.insertCell(1).innerHTML = name;
+  row.insertCell(2).innerHTML = grade;
+  row.insertCell(3).innerHTML = status;
+
+  document.getElementById("addForm").style.display = "none";
+  document.getElementById("code").value = "";
+  document.getElementById("name").value = "";
+  document.getElementById("grade").value = "";
 }
 </script>
 
 </body>
 </html>
-4. 
+فاضلنا نحط لوجو الجامعة ونبقى خلصنا الموقع كله 😍
