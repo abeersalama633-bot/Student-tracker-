@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة الطلاب + تنبيه الغياب</title>
+    <title>نظام متابعة الطلاب + حفظ تلقائي</title>
     <style>
         body { font-family: 'Arial'; background: #f4f4f4; margin: 0; padding: 20px; direction: rtl; }
         .header { background: #0056b3; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
@@ -11,6 +11,7 @@
         button { color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 2px; }
         .btn-add { background: #28a745; }
         .btn-danger { background: #dc3545; }
+        .btn-save { background: #17a2b8; }
         input { width: 98%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #0056b3; color: white; padding: 12px; }
@@ -18,16 +19,19 @@
         .badge { padding: 5px 10px; border-radius: 15px; color: white; }
         .present { background: #28a745; }
         .absent { background: #dc3545; }
+        .alert { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center; display: none; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>نظام متابعة الطلاب</h1>
-        <p>مع نظام تنبيه الغياب لاولياء الامور</p>
+        <p>البيانات بتتحفظ تلقائي</p>
     </div>
 
     <div class="container">
+        <div class="alert" id="alert">تم الحفظ تلقائي</div>
         <button class="btn-add" onclick="addStudent()">+ اضافة طالب جديد</button>
+        <button class="btn-save" onclick="resetAll()">اعادة تعيين الكل لحاضر</button>
         <input type="text" id="searchInput" onkeyup="searchStudent()" placeholder="ابحث عن اسم الطالب او الكود...">
         
         <table id="studentTable">
@@ -46,19 +50,30 @@
     </div>
 
 <script>
-let students = [
-    {code: "1001", name: "احمد محمد", parent: "01011111", grade: 95, status: "present"},
-    {code: "1002", name: "سارة علي", parent: "01022222", grade: 88, status: "present"},
-    {code: "1003", name: "ريتاج محمد", parent: "01033333333", grade: 88, status: "present"}
+let students = JSON.parse(localStorage.getItem('students')) || [
+    {code: "1001", name: "احمد محمد", parent: "201011111", grade: 95, status: "present"},
+    {code: "1002", name: "سارة علي", parent: "201022222", grade: 88, status: "present"}
 ];
+
+function saveData() {
+    localStorage.setItem('students', JSON.stringify(students));
+    showAlert();
+}
+
+function showAlert() {
+    let alert = document.getElementById('alert');
+    alert.style.display = 'block';
+    setTimeout(() => alert.style.display = 'none', 2000);
+}
 
 function addStudent() {
     let code = prompt("ادخل كود الطالب:");
     let name = prompt("ادخل اسم الطالب:");
-    let parent = prompt("ادخل رقم ولي الامر: 010...");
+    let parent = prompt("ادخل رقم ولي الامر: ابدأ بـ 2 مثال 2010...");
     let grade = prompt("ادخل درجة الطالب:");
     if(code && name && parent && grade) {
         students.push({code, name, parent, grade: parseInt(grade), status: "present"});
+        saveData();
         displayStudents();
     }
 }
@@ -67,14 +82,21 @@ function markAbsent(code) {
     let student = students.find(s => s.code == code);
     student.status = "absent";
     sendWhatsApp(student);
+    saveData();
     displayStudents();
-    alert("تم تسجيل الغياب وفتح الواتساب للارسال");
+}
+
+function resetAll() {
+    students.forEach(s => s.status = "present");
+    saveData();
+    displayStudents();
+    alert("تم اعادة تعيين الكل لحاضر");
 }
 
 function sendWhatsApp(student) {
     let today = new Date().toLocaleDateString('ar-EG');
     let message = `السيد ولي امر الطالب/ ${student.name}%0Aنحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}%0Aبرجاء التكرم بالمتابعة.%0Aادارة المدرسة`;
-    let url = `https://wa.me/2${student.parent}?text=${message}`;
+    let url = `https://wa.me/${student.parent}?text=${message}`;
     window.open(url, '_blank');
 }
 
