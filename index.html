@@ -5,12 +5,14 @@
     <title>نظام متابعة الطلاب - طب الاسكندرية</title>
     <style>
         body { font-family: 'Arial'; background: #f4f4f4; margin: 0; padding: 20px; }
-        .header { background: #004d99; color: white; padding: 20px; text-align: center; border-radius: 10px; }
-        .container { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+       .header { background: #004d99; color: white; padding: 20px; text-align: center; border-radius: 10px; }
+       .container { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+        #searchBox { width: 100%; padding: 10px; font-size: 16px; border: 2px solid #004d99; border-radius: 5px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #004d99; color: white; padding: 10px; }
         td { padding: 10px; border: 1px solid #ddd; text-align: center; }
-        .footer { text-align: center; margin-top: 20px; color: #555; }
+        tr:hover { background-color: #f1f1f1; }
+       .footer { text-align: center; margin-top: 20px; color: #555; }
     </style>
 </head>
 <body>
@@ -22,7 +24,10 @@
 
     <div class="container">
         <h2>قائمة الطلاب</h2>
-        <table>
+        
+        <input type="text" id="searchBox" onkeyup="searchStudent()" placeholder="ابحث عن اسم الطالب او الكود...">
+
+        <table id="studentTable">
             <tr>
                 <th>الكود</th>
                 <th>اسم الطالب</th>
@@ -51,8 +56,35 @@
     </div>
 
     <div class="footer">
-        <p>الفريق: ريتاج - رودينا - ملك - يوسف - ساندي</p>
+        <p>الفريق: ريتاج - رودينا - ملك - يوسف - سانظي</p>
     </div>
+
+<script>
+function searchStudent() {
+  let input = document.getElementById("searchBox");
+  let filter = input.value.toUpperCase();
+  let table = document.getElementById("studentTable");
+  let tr = table.getElementsByTagName("tr");
+
+  for (let i = 1; i < tr.length; i++) {
+    let td = tr[i].getElementsByTagName("td");
+    let found = false;
+    for (let j = 0; j < td.length; j++) {
+      if (td[j]) {
+        if (td[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+          found = true;
+        }
+      }
+    }
+    if (found) {
+      tr[i].style.display = "";
+    } else {
+      tr[i].style.display = "none";
+    }
+  }
+}
+</script>
 
 </body>
 </html>
+4. 
