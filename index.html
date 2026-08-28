@@ -1,7 +1,90 @@
-  <div class="header">
-        <div>
-            <h1>نظام متابعة الطلاب</h1>
-            <p>مشروع تخرج - كلية الطب - جامعة الاسكندرية 2026</p>
-        </div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام متابعة الطلاب</title>
+    <style>
+        body { font-family: 'Arial'; background: #f4f4f4; margin: 0; padding: 20px; direction: rtl; }
+        .header { background: #0056b3; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 0; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        button { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 10px; }
+        button:hover { background: #218838; }
+        input { width: 98%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #0056b3; color: white; padding: 12px; }
+        td { padding: 10px; text-align: center; border: 1px solid #ddd; }
+        tr:nth-child(even) { background: #f2f2f2; }
+        .footer { text-align: center; margin-top: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>نظام متابعة الطلاب</h1>
+        <p>مشروع تخرج - كلية الطب - جامعة الاسكندرية 2026</p>
     </div>
- 
+
+    <div class="container">
+        <h2>قائمة الطلاب</h2>
+        <button onclick="addStudent()">+ اضافة طالب جديد</button>
+        <input type="text" id="searchInput" onkeyup="searchStudent()" placeholder="ابحث عن اسم الطالب او الكود...">
+        
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>اسم الطالب</th>
+                    <th>الدرجة</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        الفريق: ريتاج - رودينا - ملك - يوسف - سانظلي
+    </div>
+
+<script>
+let students = [
+    {code: "1001", name: "احمد محمد", grade: 95},
+    {code: "1002", name: "سارة علي", grade: 88},
+    {code: "1003", name: "ريتاج محمد", grade: 88}
+];
+
+function addStudent() {
+    let code = prompt("ادخل كود الطالب:");
+    let name = prompt("ادخل اسم الطالب:");
+    let grade = prompt("ادخل درجة الطالب:");
+    if(code && name && grade) {
+        students.push({code, name, grade: parseInt(grade)});
+        displayStudents();
+    }
+}
+
+function displayStudents() {
+    let tbody = document.querySelector("#studentTable tbody");
+    tbody.innerHTML = "";
+    students.forEach(s => {
+        let status = s.grade >= 60 ? "ناجح" : "راسب";
+        tbody.innerHTML += `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.grade}</td><td>${status}</td></tr>`;
+    });
+}
+
+function searchStudent() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let rows = document.querySelectorAll("#studentTable tbody tr");
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+
+// اعرض الطلاب اول ما الصفحة تفتح
+displayStudents();
+</script>
+</body>
+</html>
