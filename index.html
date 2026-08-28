@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة الطلاب</title>
+    <title>نظام متابعة الطلاب + تنبيه الغياب</title>
     <style>
         body { font-family: 'Arial'; background: #f4f4f4; margin: 0; padding: 20px; direction: rtl; }
         .header { background: #0056b3; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-        .header h1 { margin: 0; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        button { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 10px; }
-        button:hover { background: #218838; }
-        input { width: 98%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        button { color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 2px; }
+        .btn-add { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+        input { width: 98%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #0056b3; color: white; padding: 12px; }
         td { padding: 10px; text-align: center; border: 1px solid #ddd; }
-        tr:nth-child(even) { background: #f2f2f2; }
-        .footer { text-align: center; margin-top: 20px; color: #666; }
+        .badge { padding: 5px 10px; border-radius: 15px; color: white; }
+        .present { background: #28a745; }
+        .absent { background: #dc3545; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>نظام متابعة الطلاب</h1>
-        <p>مشروع تخرج - كلية الطب - جامعة الاسكندرية 2026</p>
+        <p>مع نظام تنبيه الغياب لاولياء الامور</p>
     </div>
 
     <div class="container">
-        <h2>قائمة الطلاب</h2>
-        <button onclick="addStudent()">+ اضافة طالب جديد</button>
+        <button class="btn-add" onclick="addStudent()">+ اضافة طالب جديد</button>
         <input type="text" id="searchInput" onkeyup="searchStudent()" placeholder="ابحث عن اسم الطالب او الكود...">
         
         <table id="studentTable">
@@ -35,42 +35,56 @@
                 <tr>
                     <th>الكود</th>
                     <th>اسم الطالب</th>
+                    <th>رقم ولي الامر</th>
                     <th>الدرجة</th>
                     <th>الحالة</th>
+                    <th>اجراء</th>
                 </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
         </table>
-    </div>
-
-    <div class="footer">
-        الفريق: ريتاج - رودينا - ملك - يوسف - سانظلي
     </div>
 
 <script>
 let students = [
-    {code: "1001", name: "احمد محمد", grade: 95},
-    {code: "1002", name: "سارة علي", grade: 88},
-    {code: "1003", name: "ريتاج محمد", grade: 88}
+    {code: "1001", name: "احمد محمد", parent: "01011111", grade: 95, status: "present"},
+    {code: "1002", name: "سارة علي", parent: "01022222", grade: 88, status: "present"},
+    {code: "1003", name: "ريتاج محمد", parent: "01033333333", grade: 88, status: "present"}
 ];
 
 function addStudent() {
     let code = prompt("ادخل كود الطالب:");
     let name = prompt("ادخل اسم الطالب:");
+    let parent = prompt("ادخل رقم ولي الامر: 010...");
     let grade = prompt("ادخل درجة الطالب:");
-    if(code && name && grade) {
-        students.push({code, name, grade: parseInt(grade)});
+    if(code && name && parent && grade) {
+        students.push({code, name, parent, grade: parseInt(grade), status: "present"});
         displayStudents();
     }
+}
+
+function markAbsent(code) {
+    let student = students.find(s => s.code == code);
+    student.status = "absent";
+    sendWhatsApp(student);
+    displayStudents();
+    alert("تم تسجيل الغياب وفتح الواتساب للارسال");
+}
+
+function sendWhatsApp(student) {
+    let today = new Date().toLocaleDateString('ar-EG');
+    let message = `السيد ولي امر الطالب/ ${student.name}%0Aنحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}%0Aبرجاء التكرم بالمتابعة.%0Aادارة المدرسة`;
+    let url = `https://wa.me/2${student.parent}?text=${message}`;
+    window.open(url, '_blank');
 }
 
 function displayStudents() {
     let tbody = document.querySelector("#studentTable tbody");
     tbody.innerHTML = "";
     students.forEach(s => {
-        let status = s.grade >= 60 ? "ناجح" : "راسب";
-        tbody.innerHTML += `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.grade}</td><td>${status}</td></tr>`;
+        let statusBadge = s.status == "present" ? '<span class="badge present">حاضر</span>' : '<span class="badge absent">غايب</span>';
+        let actionBtn = s.status == "present" ? `<button class="btn-danger" onclick="markAbsent('${s.code}')">تسجيل غياب</button>` : '-';
+        tbody.innerHTML += `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.parent}</td><td>${s.grade}</td><td>${statusBadge}</td><td>${actionBtn}</td></tr>`;
     });
 }
 
@@ -83,7 +97,6 @@ function searchStudent() {
     });
 }
 
-// اعرض الطلاب اول ما الصفحة تفتح
 displayStudents();
 </script>
 </body>
