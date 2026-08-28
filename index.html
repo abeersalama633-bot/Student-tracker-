@@ -5,25 +5,29 @@
     <title>نظام متابعة الطلاب - طب الاسكندرية</title>
     <style>
         body { font-family: 'Arial'; background: #f4f4f4; margin: 0; padding: 20px; }
-      .header { background: #004d99; color: white; padding: 20px; text-align: center; border-radius: 10px; }
-      .container { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+     .header { background: #004d99; color: white; padding: 20px; text-align: center; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+     .logo { width: 60px; height: 60px; background: white; border-radius: 50%; padding: 5px; }
+     .container { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
         #searchBox { width: 100%; padding: 10px; font-size: 16px; border: 2px solid #004d99; border-radius: 5px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #004d99; color: white; padding: 10px; }
         td { padding: 10px; border: 1px solid #ddd; text-align: center; }
         tr:hover { background-color: #f1f1f1; }
-       .btn { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
-       .btn:hover { background: #218838; }
-      .form-add { display: none; margin-bottom: 20px; }
-      .form-add input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
-      .footer { text-align: center; margin-top: 20px; color: #555; }
+      .btn { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
+      .btn:hover { background: #218838; }
+     .form-add { display: none; margin-bottom: 20px; }
+     .form-add input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+     .footer { text-align: center; margin-top: 20px; color: #555; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>نظام متابعة الطلاب</h1>
-        <p>مشروع تخرج - كلية الطب - جامعة الاسكندرية 2026</p>
+        <img src="https://upload.wikimedia.org/wikipedia/ar/5/5b/Alexandria_University_Logo.png" class="logo">
+        <div>
+            <h1>نظام متابعة الطلاب</h1>
+            <p>مشروع تخرج - كلية الطب - جامعة الاسكندرية 2026</p>
+        </div>
     </div>
 
     <div class="container">
@@ -56,6 +60,12 @@
             <tr>
                 <td>1002</td>
                 <td>سارة علي</td>
+                <td>88</td>
+                <td>ناجح</td>
+            </tr>
+            <tr>
+                <td>1003</td>
+                <td>ريتاج محمد</td>
                 <td>88</td>
                 <td>ناجح</td>
             </tr>
@@ -113,4 +123,3 @@ function addStudent() {
 
 </body>
 </html>
-فاضلنا نحط لوجو الجامعة ونبقى خلصنا الموقع كله 😍
