@@ -1,19 +1,93 @@
-<td>${s.status}</td>
-غيريه لـ ده:
-<td class="${s.status==='غايب'?'غايب':'حاضر'}">${s.status==='حاضر'?'حاضر':'غايب'}</td>
-*2. عشان نخلي زر "غياب/حضور" يبعت واتساب*
-دوري على دالة `toggleAbsence` وغيريها كلها بالدي:
-function toggleAbsence(i){
-    // نقلب الحالة
-    students[i].status = students[i].status === 'حاضر'? 'غايب' : 'حاضر';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>نظام متابعة الطلاب</title>
+<style>
+    body { font-family: 'Tahoma'; background: #f4f6f9; padding: 20px; }
+  .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px #ccc; }
+    h1 { text-align: center; color: #2c3e50; }
+    .top-btns { text-align: center; margin: 15px 0; }
+    .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; }
+   .btn-excel { background: #27ae60; }
+   .btn-print { background: #8e44ad; }
+    input { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #3498db; color: white; padding: 12px; }
+    td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    .btn-edit { background: #f39c12; padding: 6px 12px; }
+    .btn-toggle { background: #2ecc71; padding: 6px 12px; }
+    .btn-delete { background: #e74c3c; padding: 6px 12px; }
+  .حاضر { color: green; font-weight: bold; }
+  .غايب { color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>نظام متابعة الطلاب</h1>
+    <div class="top-btns">
+        <button class="btn btn-excel" onclick="exportCSV()">تصدير اكسل 📊</button>
+        <button class="btn btn-print" onclick="window.print()">طباعة الكشف 🖨️</button>
+        <button class="btn" style="background:#3498db" onclick="saveData()">حفظ</button>
+    </div>
+    <input id="search" placeholder="ابحث باسم الطالب..." onkeyup="displayStudents()">
+    <table>
+        <thead>
+            <tr>
+                <th>الاسم</th><th>الكود</th><th>رقم ولي الامر</th><th>الدرجة</th><th>الحالة</th><th>الاجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="studentsTable"></tbody>
+    </table>
+</div>
 
-    // لو غايب نبعت رسالة
-    if(students[i].status === 'غايب' && students[i].parent){
+<script>
+let students = JSON.parse(localStorage.getItem('students')) || [
+{name:'احمد محمد',code:'1001',parent:'201011111',grade:'95',status:'حاضر'},
+{name:'سارة علي',code:'1002',parent:'201022222',grade:'88',status:'حاضر'},
+{name:'ناديه',code:'1007',parent:'20120221368',grade:'79',status:'غايب'}
+];
+
+function displayStudents(){
+    let search = document.getElementById('search').value;
+    let tbody = document.getElementById('studentsTable');
+    tbody.innerHTML = '';
+    students.filter(s=>s.name.includes(search)).forEach((s,i)=>{
+        tbody.innerHTML += `<tr>
+            <td>${s.name}</td>
+            <td>${s.code}</td>
+            <td>${s.parent}</td>
+            <td>${s.grade}</td>
+            <td class="${s.status}">${s.status}</td>
+            <td>
+                <button class="btn-edit" onclick="editStudent(${i})">تعديل</button>
+                <button class="btn-toggle" onclick="toggleAbsence(${i})">غياب/حضور</button>
+                <button class="btn-delete" onclick="deleteStudent(${i})">مسح</button>
+            </td>
+        </tr>`;
+    });
+}
+
+function toggleAbsence(i){
+    students[i].status = students[i].status === 'حاضر'? 'غايب' : 'حاضر';
+    if(students[i].status === 'غايب'){
         let today = new Date().toLocaleDateString('ar-EG');
-        let msg = `السيد ولي امر الطالب/ ${students[i].name}
-نحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}
-برجاء التكرم بالمتابعة.
-ادارة المدرسة`;
-        window.open(`https://wa.me/2${students[i].parent}?text=${encodeURIComponent(msg)}`, '_blank');
+        let msg = `السيد ولي امر الطالب/ ${students[i].name}\nنحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}\nبرجاء التكرم بالمتابعة.\nادارة المدرسة`;
+        window.open(`https://wa.me/2${students[i].parent}?text=${encodeURIComponent(msg)}`,'_blank');
     }
-    
+    saveData();
+    displayStudents();
+}
+
+function deleteStudent(i){if(confirm('متأكدة؟')){students.splice(i,1);saveData();displayStudents();}}
+function editStudent(i){alert('التعديل: عدلي من هنا بعدين نعمله')}
+function saveData(){localStorage.setItem('students',JSON.stringify(students));alert('تم الحفظ')}
+function exportCSV(){
+    let csv = 'الاسم,الكود,رقم ولي الامر,الدرجة,الحالة\n' + students.map(s=>`${s.name},${s.code},${s.parent},${s.grade},${s.status}`).join('\n');
+    let blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+    let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'كشف_الطلاب.csv'; a.click();
+}
+displayStudents();
+</script>
+</body>
+</html>
