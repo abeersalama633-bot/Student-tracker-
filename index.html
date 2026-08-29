@@ -2,35 +2,53 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام متابعة الطلاب</title>
 <style>
-    body { font-family: 'Tahoma'; background: #f4f6f9; padding: 20px; }
-  .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px #ccc; }
-    h1 { text-align: center; color: #2c3e50; }
+    body { font-family: 'Tahoma'; background: #f4f6f9; padding: 20px; margin: 0; }
+    .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px #ccc; }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
     .top-btns { text-align: center; margin: 15px 0; }
-    .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; }
-   .btn-excel { background: #27ae60; }
-   .btn-print { background: #8e44ad; }
-    input { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; float:left; width:200px }
+    .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; font-size: 16px; }
+    .btn-excel { background: #27ae60; }
+    .btn-print { background: #8e44ad; }
+    .btn-save { background: #3498db; }
+    .add-box { margin:15px 0; padding:15px; background:#ecf0f1; border-radius:8px }
+    .add-box h3 { margin-top: 0; color: #2c3e50; }
+    .add-box input { padding: 10px; margin: 5px 1%; border: 1px solid #ddd; border-radius: 5px; width: 22%; box-sizing: border-box; }
+    .btn-add { background:#27ae60; width:100%; margin-top:10px }
+    #search { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; float:left; width:250px }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; clear:both }
-    th { background: #3498db; color: white; padding: 12px; }
+    th { background: #3498db; color: white; padding: 12px; text-align: center; }
     td { border: 1px solid #ddd; padding: 10px; text-align: center; }
     .btn-edit { background: #f39c12; padding: 6px 12px; }
     .btn-toggle { background: #2ecc71; padding: 6px 12px; }
     .btn-delete { background: #e74c3c; padding: 6px 12px; }
-  .حاضر { color: green; font-weight: bold; }
-  .غايب { color: red; font-weight: bold; }
+    .حاضر { color: green; font-weight: bold; }
+    .غايب { color: red; font-weight: bold; }
 </style>
 </head>
 <body>
 <div class="container">
     <h1>نظام متابعة الطلاب</h1>
+    
     <div class="top-btns">
         <button class="btn btn-excel" onclick="exportCSV()">تصدير اكسل 📊</button>
         <button class="btn btn-print" onclick="window.print()">طباعة الكشف 🖨️</button>
-        <button class="btn" style="background:#3498db" onclick="saveData()">حفظ</button>
+        <button class="btn btn-save" onclick="saveData()">حفظ</button>
     </div>
+
+    <div class="add-box">
+        <h3>اضافة طالب جديد</h3>
+        <input id="name" placeholder="اسم الطالب">
+        <input id="code" placeholder="الكود">
+        <input id="parent" placeholder="رقم ولي الامر بدون 0">
+        <input id="grade" placeholder="الدرجة">
+        <button class="btn btn-add" onclick="addStudent()">اضافة طالب</button>
+    </div>
+
     <input id="search" placeholder="ابحث باسم الطالب..." onkeyup="displayStudents()">
+    
     <table>
         <thead>
             <tr>
@@ -45,7 +63,6 @@
 let students = JSON.parse(localStorage.getItem('students')) || [];
 
 function getStatusText(s){
-    // بيحول present ل حاضر و absent ل غايب
     if(s === 'present' || s === 'حاضر') return 'حاضر';
     if(s === 'absent' || s === 'غايب') return 'غايب';
     return 'حاضر';
@@ -72,6 +89,22 @@ function displayStudents(){
     });
 }
 
+function addStudent(){
+    let n=document.getElementById('name').value;
+    let c=document.getElementById('code').value;
+    let p=document.getElementById('parent').value;
+    let g=document.getElementById('grade').value;
+    if(!n || !p) return alert('لازم تكتبي الاسم ورقم ولي الامر');
+    
+    students.push({name:n, code:c, parent:p, grade:g, status:'حاضر'});
+    saveData();
+    displayStudents();
+    document.getElementById('name').value='';
+    document.getElementById('code').value='';
+    document.getElementById('parent').value='';
+    document.getElementById('grade').value='';
+}
+
 function toggleAbsence(i){
     let current = getStatusText(students[i].status);
     students[i].status = current === 'حاضر'? 'غايب' : 'حاضر';
@@ -85,9 +118,9 @@ function toggleAbsence(i){
     displayStudents();
 }
 
-function deleteStudent(i){if(confirm('متأكدة؟')){students.splice(i,1);saveData();displayStudents();}}
-function editStudent(i){alert('ميزة التعديل هتتعمل بعدين')}
-function saveData(){localStorage.setItem('students',JSON.stringify(students));alert('تم الحفظ')}
+function deleteStudent(i){if(confirm('متأكدة انك عايزة تمسحي الطالب؟')){students.splice(i,1);saveData();displayStudents();}}
+function editStudent(i){alert('ميزة التعديل هنضيفها بعدين ان شاء الله')}
+function saveData(){localStorage.setItem('students',JSON.stringify(students));alert('تم حفظ البيانات بنجاح')}
 function exportCSV(){
     let csv = 'الاسم,الكود,رقم ولي الامر,الدرجة,الحالة\n' + students.map(s=>`${s.name},${s.code},${s.parent},${s.grade},${getStatusText(s.status)}`).join('\n');
     let blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
