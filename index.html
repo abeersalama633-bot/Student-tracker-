@@ -1,36 +1,19 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<title>نظام متابعة الطلاب</title>
-<style>
-body{font-family:tahoma;background:#f5f5f5;padding:20px;text-align:right}
-.container{max-width:700px;margin:auto;background:white;padding:20px;border-radius:10px;box-shadow:0 0 10px #ccc}
-input,button{padding:10px;margin:5px;width:95%;border-radius:5px;border:1px solid #ddd;font-size:16px}
-button{background:#28a745;color:white;border:none;cursor:pointer;font-weight:bold}
-button:hover{background:#218838}
-.student{background:#f9f9f9;padding:15px;margin:10px 0;border-radius:8px;display:flex;justify-content:space-between;align-items:center}
-.absent{color:red;font-weight:bold}
-.present{color:green;font-weight:bold}
-</style>
-</head>
-<body>
-<div class="container">
-<h2>نظام متابعة الطلاب</h2>
-<input id="name" placeholder="اسم الطالب">
-<input id="parent" placeholder="رقم ولي الامر بدون 0">
-<button onclick="addStudent()">اضافة طالب</button>
-<button onclick="exportExcel()" style="background:#007bff">تصدير اكسل</button>
-<div id="list"></div>
-</div>
+<td>${s.status}</td>
+غيريه لـ ده:
+<td class="${s.status==='غايب'?'غايب':'حاضر'}">${s.status==='حاضر'?'حاضر':'غايب'}</td>
+*2. عشان نخلي زر "غياب/حضور" يبعت واتساب*
+دوري على دالة `toggleAbsence` وغيريها كلها بالدي:
+function toggleAbsence(i){
+    // نقلب الحالة
+    students[i].status = students[i].status === 'حاضر'? 'غايب' : 'حاضر';
 
-<script>
-let students = JSON.parse(localStorage.getItem('students')) || [];
-function addStudent(){let n=name.value,p=parent.value;if(!n||!p)return alert('من فضلك املئي البيانات');students.push({name:n,parent:p,status:'حاضر'});localStorage.setItem('students',JSON.stringify(students));name.value='';parent.value='';display();}
-function display(){list.innerHTML='';students.forEach((s,i)=>{list.innerHTML+=`<div class="student"><span>${s.name} - <span class="${s.status==='غايب'?'absent':'present'}">${s.status}</span></span><button onclick="toggle(${i})">حضور/غياب</button></div>`})}
-function toggle(i){students[i].status=students[i].status==='حاضر'?'غايب':'حاضر';if(students[i].status==='غايب'){let t=new Date().toLocaleDateString('ar-EG');let m=`السيد ولي امر الطالب/ ${students[i].name}\nنحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${t}\nبرجاء التكرم بالمتابعة.\nادارة المدرسة`;window.open(`https://wa.me/2${students[i].parent}?text=${encodeURIComponent(m)}`,'_blank')}localStorage.setItem('students',JSON.stringify(students));display();}
-function exportExcel(){let csv='الاسم,رقم ولي الامر,الحالة\n'+students.map(s=>`${s.name},${s.parent},${s.status}`).join('\n');let b=new Blob([csv],{type:'text/csv;charset=utf-8;'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='كشف_الطلاب.csv';a.click();}
-display();
-</script>
-</body>
-</html>
+    // لو غايب نبعت رسالة
+    if(students[i].status === 'غايب' && students[i].parent){
+        let today = new Date().toLocaleDateString('ar-EG');
+        let msg = `السيد ولي امر الطالب/ ${students[i].name}
+نحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}
+برجاء التكرم بالمتابعة.
+ادارة المدرسة`;
+        window.open(`https://wa.me/2${students[i].parent}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+    
