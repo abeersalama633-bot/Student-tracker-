@@ -11,8 +11,8 @@
     .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; }
    .btn-excel { background: #27ae60; }
    .btn-print { background: #8e44ad; }
-    input { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    input { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; float:left; width:200px }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; clear:both }
     th { background: #3498db; color: white; padding: 12px; }
     td { border: 1px solid #ddd; padding: 10px; text-align: center; }
     .btn-edit { background: #f39c12; padding: 6px 12px; }
@@ -42,23 +42,27 @@
 </div>
 
 <script>
-let students = JSON.parse(localStorage.getItem('students')) || [
-{name:'احمد محمد',code:'1001',parent:'201011111',grade:'95',status:'حاضر'},
-{name:'سارة علي',code:'1002',parent:'201022222',grade:'88',status:'حاضر'},
-{name:'ناديه',code:'1007',parent:'20120221368',grade:'79',status:'غايب'}
-];
+let students = JSON.parse(localStorage.getItem('students')) || [];
+
+function getStatusText(s){
+    // بيحول present ل حاضر و absent ل غايب
+    if(s === 'present' || s === 'حاضر') return 'حاضر';
+    if(s === 'absent' || s === 'غايب') return 'غايب';
+    return 'حاضر';
+}
 
 function displayStudents(){
     let search = document.getElementById('search').value;
     let tbody = document.getElementById('studentsTable');
     tbody.innerHTML = '';
     students.filter(s=>s.name.includes(search)).forEach((s,i)=>{
+        let status = getStatusText(s.status);
         tbody.innerHTML += `<tr>
             <td>${s.name}</td>
             <td>${s.code}</td>
             <td>${s.parent}</td>
             <td>${s.grade}</td>
-            <td class="${s.status}">${s.status}</td>
+            <td class="${status}">${status}</td>
             <td>
                 <button class="btn-edit" onclick="editStudent(${i})">تعديل</button>
                 <button class="btn-toggle" onclick="toggleAbsence(${i})">غياب/حضور</button>
@@ -69,8 +73,10 @@ function displayStudents(){
 }
 
 function toggleAbsence(i){
-    students[i].status = students[i].status === 'حاضر'? 'غايب' : 'حاضر';
-    if(students[i].status === 'غايب'){
+    let current = getStatusText(students[i].status);
+    students[i].status = current === 'حاضر'? 'غايب' : 'حاضر';
+    
+    if(students[i].status === 'غايب' && students[i].parent){
         let today = new Date().toLocaleDateString('ar-EG');
         let msg = `السيد ولي امر الطالب/ ${students[i].name}\nنحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}\nبرجاء التكرم بالمتابعة.\nادارة المدرسة`;
         window.open(`https://wa.me/2${students[i].parent}?text=${encodeURIComponent(msg)}`,'_blank');
@@ -80,10 +86,10 @@ function toggleAbsence(i){
 }
 
 function deleteStudent(i){if(confirm('متأكدة؟')){students.splice(i,1);saveData();displayStudents();}}
-function editStudent(i){alert('التعديل: عدلي من هنا بعدين نعمله')}
+function editStudent(i){alert('ميزة التعديل هتتعمل بعدين')}
 function saveData(){localStorage.setItem('students',JSON.stringify(students));alert('تم الحفظ')}
 function exportCSV(){
-    let csv = 'الاسم,الكود,رقم ولي الامر,الدرجة,الحالة\n' + students.map(s=>`${s.name},${s.code},${s.parent},${s.grade},${s.status}`).join('\n');
+    let csv = 'الاسم,الكود,رقم ولي الامر,الدرجة,الحالة\n' + students.map(s=>`${s.name},${s.code},${s.parent},${s.grade},${getStatusText(s.status)}`).join('\n');
     let blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
     let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'كشف_الطلاب.csv'; a.click();
 }
