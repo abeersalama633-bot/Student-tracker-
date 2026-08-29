@@ -1,147 +1,16 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام متابعة الطلاب</title>
-<style>
-    body { font-family: 'Tahoma', sans-serif; background: #f4f6f9; padding: 20px; }
-  .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-    h1 { text-align: center; color: #2c3e50; }
-    input, button { padding: 8px; margin: 5px; border-radius: 5px; border: 1px solid #ddd; }
-    button { background: #3498db; color: white; cursor: pointer; border: none; }
-    button:hover { background: #2980b9; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-    th { background: #3498db; color: white; }
-  .حاضر { color: green; font-weight: bold; }
-  .غايب { color: red; font-weight: bold; }
-  .btn-تعديل { background: orange; }
-  .btn-مسح { background: red; }
-  .btn-حضور { background: green; }
-    @media print {.no-print { display: none; } }
-</style>
-</head>
-<body>
-<div class="container">
-    <h1>نظام متابعة الطلاب</h1>
-
-    <div class="no-print">
-        <input type="text" id="name" placeholder="اسم الطالب">
-        <input type="text" id="code" placeholder="الكود">
-        <input type="text" id="parent" placeholder="رقم ولي الامر">
-        <input type="number" id="grade" placeholder="الدرجة">
-        <button onclick="addStudent()">حفظ</button>
-        <button onclick="exportCSV()" style="background:#27ae60">تصدير اكسل 📊</button>
-        <button onclick="window.print()" style="background:#8e44ad">طباعة الكشف 🖨️</button>
-        <input type="text" id="search" placeholder="ابحث باسم الطالب..." onkeyup="searchStudent()" style="width:200px">
-    </div>
-
-    <table id="studentsTable">
-        <thead>
-            <tr>
-                <th>الاسم</th>
-                <th>الكود</th>
-                <th>رقم ولي الامر</th>
-                <th>الدرجة</th>
-                <th>الحالة</th>
-                <th class="no-print">الاجراءات</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-
-<script>
-let students = JSON.parse(localStorage.getItem('students')) || [];
-
-function displayStudents(list = students) {
-    let tbody = document.querySelector('#studentsTable tbody');
-    tbody.innerHTML = '';
-    list.forEach((s, i) => {
-        // نحول البيانات القديمة لو انجليزي
-        let status = s.status === 'present'? 'حاضر' : s.status === 'absent'? 'غايب' : s.status;
-        let statusClass = status === 'حاضر'? 'حاضر' : 'غايب';
-        tbody.innerHTML += `
-        <tr>
-            <td>${s.name}</td>
-            <td>${s.code}</td>
-            <td>${s.parent}</td>
-            <td>${s.grade}</td>
-            <td class="${statusClass}">${status}</td>
-            <td class="no-print">
-                <button class="btn-تعديل" onclick="editStudent(${i})">تعديل</button>
-                <button class="btn-حضور" onclick="toggleAbsence(${i})">حضور/غياب</button>
-                <button class="btn-مسح" onclick="deleteStudent(${i})">مسح</button>
-            </td>
-        </tr>`;
-    });
-}
-
-function addStudent() {
-    let name = document.getElementById('name').value;
-    let code = document.getElementById('code').value;
-    let parent = document.getElementById('parent').value;
-    let grade = document.getElementById('grade').value;
-    if(name && code && parent) {
-        students.push({name, code, parent, grade, status: 'حاضر'});
-        localStorage.setItem('students', JSON.stringify(students));
-        displayStudents();
-        document.getElementById('name').value = '';
-        document.getElementById('code').value = '';
-        document.getElementById('parent').value = '';
-        document.getElementById('grade').value = '';
-    } else { alert('من فضلك املي كل البيانات') }
-}
-
 function toggleAbsence(i) {
     students[i].status = students[i].status === 'حاضر'? 'غايب' : 'حاضر';
+
     if(students[i].status === 'غايب' && students[i].parent) {
-        let msg = `عزي ولي امر الطالب ${students[i].name} نود اعلامكم بغياب ابنكم اليوم`;
+        let today = new Date().toLocaleDateString('ar-EG'); // هيطلع 29‏/8‏/2026
+        let msg = `السيد ولي امر الطالب/ ${students[i].name}
+نحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}
+برجاء التكرم بالمتابعة.
+ادارة المدرسة`;
+
         window.open(`https://wa.me/2${students[i].parent}?text=${encodeURIComponent(msg)}`, '_blank');
     }
+
     localStorage.setItem('students', JSON.stringify(students));
     displayStudents();
 }
-
-function deleteStudent(i) {
-    if(confirm('متاكد من المسح؟')) {
-        students.splice(i, 1);
-        localStorage.setItem('students', JSON.stringify(students));
-        displayStudents();
-    }
-}
-
-function editStudent(i) {
-    let s = students[i];
-    document.getElementById('name').value = s.name;
-    document.getElementById('code').value = s.code;
-    document.getElementById('parent').value = s.parent;
-    document.getElementById('grade').value = s.grade;
-    students.splice(i, 1);
-    displayStudents();
-}
-
-function searchStudent() {
-    let val = document.getElementById('search').value;
-    let filtered = students.filter(s => s.name.includes(val));
-    displayStudents(filtered);
-}
-
-function exportCSV() {
-    let csv = 'الاسم,الكود,رقم ولي الامر,الدرجة,الحالة\n';
-    students.forEach((s) => {
-        let status = s.status === 'present'? 'حاضر' : s.status === 'absent'? 'غايب' : s.status;
-        csv += `${s.name},${s.code},${s.parent},${s.grade},${status}\n`;
-    });
-    let blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    let link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'كشف_الطلاب.csv';
-    link.click();
-}
-
-displayStudents();
-</script>
-</body>
-</html>
