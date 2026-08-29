@@ -3,123 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة الطلاب + حفظ تلقائي</title>
+    <title>نظام متابعة الطلاب</title>
     <style>
-        body { font-family: 'Arial'; background: #f4f4f4; margin: 0; padding: 20px; direction: rtl; }
-        .header { background: #0056b3; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        button { color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 2px; }
-        .btn-add { background: #28a745; }
-        .btn-danger { background: #dc3545; }
-        .btn-save { background: #17a2b8; }
-        input { width: 98%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+        body { font-family: 'Tahoma', sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+       .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+       .form-group { margin-bottom: 15px; }
+        input, button { padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
+        button { background: #3498db; color: white; border: none; cursor: pointer; margin: 5px; }
+        button:hover { background: #2980b9; }
+        button.danger { background: #e74c3c; }
+        button.success { background: #2ecc71; }
+        button.warning { background: #f39c12; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #0056b3; color: white; padding: 12px; }
-        td { padding: 10px; text-align: center; border: 1px solid #ddd; }
-        .badge { padding: 5px 10px; border-radius: 15px; color: white; }
-        .present { background: #28a745; }
-        .absent { background: #dc3545; }
-        .alert { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center; display: none; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #3498db; color: white; }
+       .absent { background: #fdecea; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>نظام متابعة الطلاب</h1>
-        <p>البيانات بتتحفظ تلقائي</p>
+<div class="container">
+    <h1>نظام متابعة الطلاب 📚</h1>
+
+    <div id="form">
+        <h3 id="formTitle">اضافة طالب جديد</h3>
+        <input type="hidden" id="editIndex">
+        <div class="form-group">
+            <input type="text" id="name" placeholder="اسم الطالب">
+            <input type="text" id="code" placeholder="كود الطالب">
+            <input type="text" id="parent" placeholder="رقم ولي الامر">
+            <input type="number" id="grade" placeholder="الدرجة">
+        </div>
+        <button onclick="saveStudent()">حفظ</button>
+        <button onclick="cancelEdit()" id="cancelBtn" style="display:none;">الغاء</button>
     </div>
 
-    <div class="container">
-        <div class="alert" id="alert">تم الحفظ تلقائي</div>
-        <button class="btn-add" onclick="addStudent()">+ اضافة طالب جديد</button>
-        <button class="btn-save" onclick="resetAll()">اعادة تعيين الكل لحاضر</button>
-        <input type="text" id="searchInput" onkeyup="searchStudent()" placeholder="ابحث عن اسم الطالب او الكود...">
-        
-        <table id="studentTable">
-            <thead>
-                <tr>
-                    <th>الكود</th>
-                    <th>اسم الطالب</th>
-                    <th>رقم ولي الامر</th>
-                    <th>الدرجة</th>
-                    <th>الحالة</th>
-                    <th>اجراء</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+    <input type="text" id="search" placeholder="ابحث باسم الطالب..." onkeyup="displayStudents()" style="width:100%; margin-top:20px;">
+
+    <table>
+        <thead>
+            <tr>
+                <th>الاسم</th><th>الكود</th><th>رقم ولي الامر</th><th>الدرجة</th><th>الحالة</th><th>الاجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="studentsTable"></tbody>
+    </table>
+</div>
 
 <script>
-let students = JSON.parse(localStorage.getItem('students')) || [
-    {code: "1001", name: "احمد محمد", parent: "201011111", grade: 95, status: "present"},
-    {code: "1002", name: "سارة علي", parent: "201022222", grade: 88, status: "present"}
-];
+let students = JSON.parse(localStorage.getItem('students')) || [];
 
-function saveData() {
+function saveStudent() {
+    let name = document.getElementById('name').value;
+    let code = document.getElementById('code').value;
+    let parent = document.getElementById('parent').value;
+    let grade = document.getElementById('grade').value;
+    let index = document.getElementById('editIndex').value;
+
+    if(!name ||!code) { alert('دخلي الاسم والكود'); return; }
+
+    let student = {name, code, parent, grade, status: 'حاضر'};
+
+    if(index === '') {
+        students.push(student);
+    } else {
+        student.status = students[index].status; // احتفظ بالحالة القديمة
+        students[index] = student;
+    }
+
     localStorage.setItem('students', JSON.stringify(students));
-    showAlert();
+    clearForm();
+    displayStudents();
 }
 
-function showAlert() {
-    let alert = document.getElementById('alert');
-    alert.style.display = 'block';
-    setTimeout(() => alert.style.display = 'none', 2000);
+function editStudent(i) {
+    let s = students[i];
+    document.getElementById('name').value = s.name;
+    document.getElementById('code').value = s.code;
+    document.getElementById('parent').value = s.parent;
+    document.getElementById('grade').value = s.grade;
+    document.getElementById('editIndex').value = i;
+    document.getElementById('formTitle').innerText = 'تعديل بيانات الطالب';
+    document.getElementById('cancelBtn').style.display = 'inline-block';
 }
 
-function addStudent() {
-    let code = prompt("ادخل كود الطالب:");
-    let name = prompt("ادخل اسم الطالب:");
-    let parent = prompt("ادخل رقم ولي الامر: ابدأ بـ 2 مثال 2010...");
-    let grade = prompt("ادخل درجة الطالب:");
-    if(code && name && parent && grade) {
-        students.push({code, name, parent, grade: parseInt(grade), status: "present"});
-        saveData();
+function cancelEdit() {
+    clearForm();
+}
+
+function clearForm() {
+    document.getElementById('name').value = '';
+    document.getElementById('code').value = '';
+    document.getElementById('parent').value = '';
+    document.getElementById('grade').value = '';
+    document.getElementById('editIndex').value = '';
+    document.getElementById('formTitle').innerText = 'اضافة طالب جديد';
+    document.getElementById('cancelBtn').style.display = 'none';
+}
+
+function deleteStudent(i) {
+    if(confirm('متأكدة عايزة تمسحي الطالب؟')) {
+        students.splice(i, 1);
+        localStorage.setItem('students', JSON.stringify(students));
         displayStudents();
     }
 }
 
-function markAbsent(code) {
-    let student = students.find(s => s.code == code);
-    student.status = "absent";
-    sendWhatsApp(student);
-    saveData();
+function toggleAbsence(i) {
+    students[i].status = students[i].status === 'حاضر'? 'غايب' : 'حاضر';
+    localStorage.setItem('students', JSON.stringify(students));
     displayStudents();
-}
-
-function resetAll() {
-    students.forEach(s => s.status = "present");
-    saveData();
-    displayStudents();
-    alert("تم اعادة تعيين الكل لحاضر");
-}
-
-function sendWhatsApp(student) {
-    let today = new Date().toLocaleDateString('ar-EG');
-    let message = `السيد ولي امر الطالب/ ${student.name}%0Aنحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}%0Aبرجاء التكرم بالمتابعة.%0Aادارة المدرسة`;
-    let url = `https://wa.me/${student.parent}?text=${message}`;
-    window.open(url, '_blank');
 }
 
 function displayStudents() {
-    let tbody = document.querySelector("#studentTable tbody");
-    tbody.innerHTML = "";
-    students.forEach(s => {
-        let statusBadge = s.status == "present" ? '<span class="badge present">حاضر</span>' : '<span class="badge absent">غايب</span>';
-        let actionBtn = s.status == "present" ? `<button class="btn-danger" onclick="markAbsent('${s.code}')">تسجيل غياب</button>` : '-';
-        tbody.innerHTML += `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.parent}</td><td>${s.grade}</td><td>${statusBadge}</td><td>${actionBtn}</td></tr>`;
-    });
-}
-
-function searchStudent() {
-    let input = document.getElementById("searchInput").value.toLowerCase();
-    let rows = document.querySelectorAll("#studentTable tbody tr");
-    rows.forEach(row => {
-        let text = row.innerText.toLowerCase();
-        row.style.display = text.includes(input) ? "" : "none";
+    let search = document.getElementById('search').value.toLowerCase();
+    let tbody = document.getElementById('studentsTable');
+    tbody.innerHTML = '';
+    students.filter(s => s.name.toLowerCase().includes(search)).forEach((s, i) => {
+        tbody.innerHTML += `
+        <tr class="${s.status === 'غايب'? 'absent' : ''}">
+            <td>${s.name}</td>
+            <td>${s.code}</td>
+            <td>${s.parent}</td>
+            <td>${s.grade}</td>
+            <td>${s.status}</td>
+            <td>
+                <button class="warning" onclick="editStudent(${i})">تعديل</button>
+                <button class="success" onclick="toggleAbsence(${i})">غياب/حضور</button>
+                <button class="danger" onclick="deleteStudent(${i})">مسح</button>
+            </td>
+        </tr>`;
     });
 }
 
 displayStudents();
 </script>
 </body>
-</html> 
+</html>
