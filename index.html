@@ -1,16 +1,13 @@
 function toggleAbsence(i) {
     students[i].status = students[i].status === 'حاضر'? 'غايب' : 'حاضر';
-
     if(students[i].status === 'غايب' && students[i].parent) {
-        let today = new Date().toLocaleDateString('ar-EG'); // هيطلع 29‏/8‏/2026
+        let today = new Date().toLocaleDateString('ar-EG');
         let msg = `السيد ولي امر الطالب/ ${students[i].name}
 نحيط علم سيادتكم بغياب ابنكم/ابنتكم اليوم ${today}
 برجاء التكرم بالمتابعة.
 ادارة المدرسة`;
-
         window.open(`https://wa.me/2${students[i].parent}?text=${encodeURIComponent(msg)}`, '_blank');
     }
-
     localStorage.setItem('students', JSON.stringify(students));
     displayStudents();
 }
